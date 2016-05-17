@@ -12,10 +12,10 @@
     name="gsf"
     extension=".minigsf"
     tags="true"
-    library_linux="audiodecoder.gsf.so"/>
+    library_@PLATFORM@="@LIBRARY_FILENAME@"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="en">GSF Audio Decoder</summary>
     <description lang="en">GSF Audio Decoder</description>
-    <platform>all</platform>
+    <platform>@PLATFORM@</platform>
   </extension>
 </addon>
