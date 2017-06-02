@@ -401,6 +401,9 @@ int64_t Seek(void* context, int64_t time)
 
 bool DeInit(void* context)
 {
+ if (!context)
+    return true;
+
   GSFContext* gsf = (GSFContext*)context;
   soundShutdown(&gsf->system);
   CPUCleanUp(&gsf->system);
