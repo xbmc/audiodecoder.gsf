@@ -10,7 +10,7 @@ find_package(Kodi REQUIRED)
 
 include(ExternalProject)
 
-include_directories(${KODI_INCLUDE_DIR}
+include_directories(${KODI_INCLUDE_DIR}/..
                     ${PROJECT_SOURCE_DIR}/lib/psflib
                     ${PROJECT_SOURCE_DIR}/lib/viogsf)
 

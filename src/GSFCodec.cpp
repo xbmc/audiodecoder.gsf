@@ -17,59 +17,13 @@
  *
  */
 
-#include "libXBMC_addon.h"
+#include <kodi/addon-instance/AudioDecoder.h>
+#include <kodi/Filesystem.h>
 #include "vbam/gba/GBA.h"
 #include "vbam/gba/Sound.h"
 #include "psflib.h"
-
-extern "C" {
 #include <stdio.h>
 #include <stdint.h>
-
-#include "kodi_audiodec_dll.h"
-
-ADDON::CHelper_libXBMC_addon *XBMC           = NULL;
-
-ADDON_STATUS ADDON_Create(void* hdl, void* props)
-{
-  if (!XBMC)
-    XBMC = new ADDON::CHelper_libXBMC_addon;
-
-  if (!XBMC->RegisterMe(hdl))
-  {
-    delete XBMC, XBMC=NULL;
-    return ADDON_STATUS_PERMANENT_FAILURE;
-  }
-
-  return ADDON_STATUS_OK;
-}
-
-//-- Destroy ------------------------------------------------------------------
-// Do everything before unload of this add-on
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-void ADDON_Destroy()
-{
-  XBMC=NULL;
-}
-
-//-- GetStatus ---------------------------------------------------------------
-// Returns the current Status of this visualisation
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-ADDON_STATUS ADDON_GetStatus()
-{
-  return ADDON_STATUS_OK;
-}
-
-//-- SetSetting ---------------------------------------------------------------
-// Set a specific Setting value (called from XBMC)
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-ADDON_STATUS ADDON_SetSetting(const char *strSetting, const void* value)
-{
-  return ADDON_STATUS_OK;
-}
 
 struct gsf_loader_state
 {
@@ -105,6 +59,7 @@ struct GSFContext
   int64_t len;
   int sample_rate;
   int64_t pos;
+  bool inited = false;
   std::string title;
   std::string artist;
 };
@@ -194,29 +149,39 @@ int gsf_loader(void * context, const uint8_t * exe, size_t exe_size,
 
 static void * psf_file_fopen( const char * uri )
 {
-  return  XBMC->OpenFile(uri, 0);
+  kodi::vfs::CFile* file = new kodi::vfs::CFile;
+  if (!file->OpenFile(uri, 0))
+  {
+    delete file;
+    return nullptr;
+  }
+
+  return file;
 }
 
 static size_t psf_file_fread( void * buffer, size_t size, size_t count, void * handle )
 {
-  return XBMC->ReadFile(handle, buffer, size*count);
+  kodi::vfs::CFile* file = static_cast<kodi::vfs::CFile*>(handle);
+  return file->Read(buffer, size*count);
 }
 
 static int psf_file_fseek( void * handle, int64_t offset, int whence )
 {
-  return XBMC->SeekFile(handle, offset, whence) > -1?0:-1;
+  kodi::vfs::CFile* file = static_cast<kodi::vfs::CFile*>(handle);
+  return file->Seek(offset, whence) > -1 ? 0 : -1;
 }
 
 static int psf_file_fclose( void * handle )
 {
-  XBMC->CloseFile(handle);
+  delete static_cast<kodi::vfs::CFile*>(handle);
 
   return 0;
 }
 
 static long psf_file_ftell( void * handle )
 {
-  return XBMC->GetFilePosition(handle);
+  kodi::vfs::CFile* file = static_cast<kodi::vfs::CFile*>(handle);
+  return file->GetPosition();
 }
 
 const psf_file_callbacks psf_file_system =
@@ -319,119 +284,134 @@ static int psf_info_meta(void* context,
   return 0;
 }
 
-void* Init(const char* strFile, unsigned int filecache, int* channels,
-           int* samplerate, int* bitspersample, int64_t* totaltime,
-           int* bitrate, AEDataFormat* format, const AEChannel** channelinfo)
+
+class CGSFCodec : public kodi::addon::CInstanceAudioDecoder,
+                  public kodi::addon::CAddonBase
 {
-  GSFContext* result = new GSFContext;
-  result->pos = 0;
+public:
+  CGSFCodec(KODI_HANDLE instance) :
+    CInstanceAudioDecoder(instance) {}
 
-  if (psf_load(strFile, &psf_file_system, 0x22, 0, 0, psf_info_meta, result, 0) <= 0)
+  virtual ~CGSFCodec()
   {
-    delete result;
-    return NULL;
-  }
-  if (psf_load(strFile, &psf_file_system, 0x22, gsf_loader, &result->state, 0, 0, 0) < 0)
-  {
-    delete result;
-    return NULL;
-  }
-  result->system.cpuIsMultiBoot = (result->state.entry >> 24 == 2);
-  CPULoadRom(&result->system, result->state.data, result->state.data_size); 
-  soundInit(&result->system, &result->output);
-  soundReset(&result->system);
-  CPUInit(&result->system);
-  CPUReset(&result->system);
-  
-  *totaltime = result->len;
-  static enum AEChannel map[3] = {
-    AE_CH_FL, AE_CH_FR, AE_CH_NULL
-  };
-  *format = AE_FMT_S16NE;
-  *channelinfo = map;
-  *channels = 2;
-  *bitspersample = 16;
-  *bitrate = 0.0;
-  *samplerate = result->sample_rate = 44100;
-  result->len = result->sample_rate*4*(*totaltime)/1000;
-
-  return result;
-}
-
-int ReadPCM(void* context, uint8_t* pBuffer, int size, int *actualsize)
-{
-  GSFContext* gsf = (GSFContext*)context;
-  if (gsf->pos >= gsf->len)
-    return 1;
-  if (gsf->output.bytes_in_buffer == 0)
-  {
-    gsf->output.head = 0;
-    CPULoop(&gsf->system, 250000);
+    if (ctx.inited)
+    {
+      soundShutdown(&ctx.system);
+      CPUCleanUp(&ctx.system);
+    }
   }
 
-  int tocopy = std::min(size, (int)gsf->output.bytes_in_buffer);
-  memcpy(pBuffer, &gsf->output.sample_buffer[gsf->output.head], tocopy);
-  gsf->pos += tocopy;
-  gsf->output.bytes_in_buffer -= tocopy;
-  gsf->output.head += tocopy;
-  *actualsize = tocopy;
-  return 0;
-}
-
-int64_t Seek(void* context, int64_t time)
-{
-  GSFContext* gsf = (GSFContext*)context;
-  if (time*gsf->sample_rate*4/1000 < gsf->pos)
+  virtual bool Init(const std::string& filename, unsigned int filecache,
+                    int& channels, int& samplerate,
+                    int& bitspersample, int64_t& totaltime,
+                    int& bitrate, AEDataFormat& format,
+                    std::vector<AEChannel>& channellist) override
   {
-    CPUReset(&gsf->system);
-    gsf->pos = 0;
-  }
-  
-  int64_t left = time*gsf->sample_rate*4/1000-gsf->pos;
-  while (left > 1024)
-  {
-    CPULoop(&gsf->system, 250000);
-    gsf->pos += gsf->output.bytes_in_buffer;
-    left -= gsf->output.bytes_in_buffer;
-    gsf->output.head = gsf->output.bytes_in_buffer = 0;
-  }
+    ctx.pos = 0;
 
-  return gsf->pos/(gsf->sample_rate*4)*1000;
-}
+    if (psf_load(filename.c_str(), &psf_file_system, 0x22, 0, 0,
+                 psf_info_meta, &ctx, 0) <= 0)
+      return false;
 
-bool DeInit(void* context)
-{
- if (!context)
+    if (psf_load(filename.c_str(), &psf_file_system, 0x22,
+        gsf_loader, &ctx.state, 0, 0, 0) < 0)
+      return false;
+
+    ctx.system.cpuIsMultiBoot = (ctx.state.entry >> 24 == 2);
+    CPULoadRom(&ctx.system, ctx.state.data, ctx.state.data_size);
+    soundInit(&ctx.system, &ctx.output);
+    soundReset(&ctx.system);
+    CPUInit(&ctx.system);
+    CPUReset(&ctx.system);
+
+    format = AE_FMT_S16NE;
+    channellist = { AE_CH_FL, AE_CH_FR };
+    channels = 2;
+    bitspersample = 16;
+    bitrate = 0.0;
+    samplerate = ctx.sample_rate = 44100;
+    totaltime = ctx.len;
+    ctx.len = ctx.sample_rate*4*totaltime/1000;
+
     return true;
-
-  GSFContext* gsf = (GSFContext*)context;
-  soundShutdown(&gsf->system);
-  CPUCleanUp(&gsf->system);
-  delete gsf;
-
-  return true;
-}
-
-bool ReadTag(const char* strFile, char* title, char* artist, int* length)
-{
-  GSFContext* gsf = new GSFContext;
-
-  if (psf_load(strFile, &psf_file_system, 0x22, 0, 0, psf_info_meta, gsf, 0) <= 0)
-  {
-    delete gsf;
-    return false;
   }
 
-  strcpy(title, gsf->title.c_str());
-  strcpy(artist, gsf->artist.c_str());
-  *length = gsf->len/1000;
+  virtual int ReadPCM(uint8_t* buffer, int size, int& actualsize) override
+  {
+    if (ctx.pos >= ctx.len)
+      return 1;
 
-  delete gsf;
-  return true;
-}
+    if (ctx.output.bytes_in_buffer == 0)
+    {
+      ctx.output.head = 0;
+      CPULoop(&ctx.system, 250000);
+    }
 
-int TrackCount(const char* strFile)
+    int tocopy = std::min(size, (int)ctx.output.bytes_in_buffer);
+    memcpy(buffer, &ctx.output.sample_buffer[ctx.output.head], tocopy);
+    ctx.pos += tocopy;
+    ctx.output.bytes_in_buffer -= tocopy;
+    ctx.output.head += tocopy;
+    actualsize = tocopy;
+    return 0;
+  }
+
+  virtual int64_t Seek(int64_t time) override
+  {
+    if (time*ctx.sample_rate*4/1000 < ctx.pos)
+    {
+      CPUReset(&ctx.system);
+      ctx.pos = 0;
+    }
+
+    int64_t left = time*ctx.sample_rate*4/1000-ctx.pos;
+    while (left > 1024)
+    {
+      CPULoop(&ctx.system, 250000);
+      ctx.pos += ctx.output.bytes_in_buffer;
+      left -= ctx.output.bytes_in_buffer;
+      ctx.output.head = ctx.output.bytes_in_buffer = 0;
+    }
+
+    return ctx.pos/(ctx.sample_rate*4)*1000;
+  }
+
+  virtual bool ReadTag(const std::string& file, std::string& title,
+                       std::string& artist, int& length) override
+  {
+    GSFContext gsf;
+
+    if (psf_load(file.c_str(), &psf_file_system, 0x22, 0,
+                 0, psf_info_meta, &gsf, 0) <= 0)
+    {
+      return false;
+    }
+
+    title = gsf.title.c_str();
+    artist = gsf.artist.c_str();
+    length = gsf.len/1000;
+
+    return true;
+  }
+
+private:
+  GSFContext ctx;
+};
+
+
+class ATTRIBUTE_HIDDEN CMyAddon : public kodi::addon::CAddonBase
 {
-  return 1;
-}
-}
+public:
+  CMyAddon() { }
+  virtual ADDON_STATUS CreateInstance(int instanceType, std::string instanceID, KODI_HANDLE instance, KODI_HANDLE& addonInstance) override
+  {
+    addonInstance = new CGSFCodec(instance);
+    return ADDON_STATUS_OK;
+  }
+  virtual ~CMyAddon()
+  {
+  }
+};
+
+
+ADDONCREATOR(CMyAddon);
