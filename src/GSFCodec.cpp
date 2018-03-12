@@ -22,6 +22,7 @@
 #include "vbam/gba/GBA.h"
 #include "vbam/gba/Sound.h"
 #include "psflib.h"
+#include <algorithm>
 #include <stdio.h>
 #include <stdint.h>
 

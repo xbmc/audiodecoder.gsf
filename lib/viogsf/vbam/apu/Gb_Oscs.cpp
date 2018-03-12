@@ -15,6 +15,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 #include "blargg_source.h"
 
+#if defined(_MSC_VER)
+#pragma warning (disable:4146)
+#endif
+
 namespace GBA {
 
 bool const cgb_02 = false; // enables bug in early CGB units that causes problems in some games

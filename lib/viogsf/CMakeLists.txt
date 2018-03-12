@@ -15,6 +15,5 @@ set(SOURCES vbam/apu/Multi_Buffer.cpp
             vbam/gba/GBA-arm.cpp
             vbam/gba/Sound.cpp)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-
+set(CMAKE_POSITION_INDEPENDENT_CODE 1)
 add_library(viogsf STATIC ${SOURCES})

@@ -24,4 +24,8 @@ set(DEPLIBS viogsf psflib ${ZLIB_LIBRARIES})
 
 build_addon(audiodecoder.gsf GSF DEPLIBS)
 
+if(CORE_SYSTEM_NAME MATCHES windows)
+  target_compile_definitions(audiodecoder.gsf PRIVATE -Dstrcasecmp=_stricmp)
+endif()
+
 include(CPack)
