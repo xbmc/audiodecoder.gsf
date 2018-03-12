@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 enable_language(CXX)
 
 find_package(Kodi REQUIRED)
+find_package(ZLIB REQUIRED)
 
 include(ExternalProject)
 
@@ -19,7 +20,7 @@ add_subdirectory(lib/viogsf)
 
 set(GSF_SOURCES src/GSFCodec.cpp)
 
-set(DEPLIBS viogsf psflib)
+set(DEPLIBS viogsf psflib ${ZLIB_LIBRARIES})
 
 build_addon(audiodecoder.gsf GSF DEPLIBS)
 
