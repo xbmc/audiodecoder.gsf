@@ -7,7 +7,11 @@ extern int armExecute(GBASystem *);
 extern int thumbExecute(GBASystem *);
 
 #ifdef __GNUC__
+#if defined(__x86_64) || defined(__x86_64__) || defined(__i386) || defined(__i386__) || defined(i386) || defined(__i686) || defined(__i686__)
 # define INSN_REGPARM __attribute__((regparm(2)))
+#else
+# define INSN_REGPARM
+#endif
 # define LIKELY(x) __builtin_expect(!!(x),1)
 # define UNLIKELY(x) __builtin_expect(!!(x),0)
 #else
