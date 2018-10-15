@@ -2,8 +2,8 @@
 
 This is a [Kodi](http://kodi.tv) audio decoder addon for GSF files.
 
-[![Build Status](https://travis-ci.org/notspiff/audiodecoder.gsf.svg?branch=master)](https://travis-ci.org/notspiff/audiodecoder.gsf)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/notspiff/audiodecoder.gsf?svg=true)](https://ci.appveyor.com/project/notspiff/audiodecoder-gsf)
+[![Build Status](https://travis-ci.org/xbmc/audiodecoder.gsf.svg?branch=master)](https://travis-ci.org/xbmc/audiodecoder.gsf)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/audiodecoder.gsf?svg=true)](https://ci.appveyor.com/project/xbmc/audiodecoder-gsf)
 
 ## Build instructions
 
@@ -17,7 +17,7 @@ The following instructions assume you will have built Kodi already in the `kodi-
 suggested by the README.
 
 1. `git clone https://github.com/xbmc/xbmc.git`
-2. `git clone https://github.com/notspiff/audiodecoder.gsf.git`
+2. `git clone https://github.com/xbmc/audiodecoder.gsf.git`
 3. `cd audiodecoder.gsf && mkdir build && cd build`
 4. `cmake -DADDONS_TO_BUILD=audiodecoder.gsf -DADDON_SRC_PREFIX=../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../../xbmc/kodi-build/addons -DPACKAGE_ZIP=1 ../../xbmc/cmake/addons`
 5. `make`
