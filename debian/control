@@ -1,0 +1,21 @@
+Source: kodi-audiodecoder-gsf
+Priority: extra
+Maintainer: Arne Morten Kvarving <cptspiff@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), cmake, kodi-addon-dev,
+               libkodiplatform-dev (>= 17.1.0), zlib1g-dev
+Standards-Version: 3.9.6
+Section: libs
+
+Package: kodi-audiodecoder-gsf
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 2SF audio decoder for Kodi
+  GSF audio decoder for Kodi
+
+Package: kodi-audiodecoder-gsf-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: debug symbols for GSF audio decoder for Kodi
+  debug symbols for GSF audio decoder for Kodi
