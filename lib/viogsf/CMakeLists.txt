@@ -1,8 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
 project(viogsf)
-
-enable_language(CXX)
-
-cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES vbam/apu/Multi_Buffer.cpp
             vbam/apu/Gb_Oscs.cpp
