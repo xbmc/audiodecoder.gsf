@@ -301,20 +301,20 @@ public:
     }
   }
 
-  virtual bool Init(const std::string& filename, unsigned int filecache,
-                    int& channels, int& samplerate,
-                    int& bitspersample, int64_t& totaltime,
-                    int& bitrate, AEDataFormat& format,
-                    std::vector<AEChannel>& channellist) override
+  bool Init(const std::string& filename, unsigned int filecache,
+            int& channels, int& samplerate,
+            int& bitspersample, int64_t& totaltime,
+            int& bitrate, AEDataFormat& format,
+            std::vector<AEChannel>& channellist) override
   {
     ctx.pos = 0;
 
     if (psf_load(filename.c_str(), &psf_file_system, 0x22, 0, 0,
-                 psf_info_meta, &ctx, 0) <= 0)
+                 psf_info_meta, &ctx, 0, nullptr, nullptr) <= 0)
       return false;
 
     if (psf_load(filename.c_str(), &psf_file_system, 0x22,
-        gsf_loader, &ctx.state, 0, 0, 0) < 0)
+        gsf_loader, &ctx.state, 0, 0, 0, nullptr, nullptr) < 0)
       return false;
 
     ctx.system.cpuIsMultiBoot = (ctx.state.entry >> 24 == 2);
@@ -336,7 +336,7 @@ public:
     return true;
   }
 
-  virtual int ReadPCM(uint8_t* buffer, int size, int& actualsize) override
+  int ReadPCM(uint8_t* buffer, int size, int& actualsize) override
   {
     if (ctx.pos >= ctx.len)
       return 1;
@@ -356,7 +356,7 @@ public:
     return 0;
   }
 
-  virtual int64_t Seek(int64_t time) override
+  int64_t Seek(int64_t time) override
   {
     if (time*ctx.sample_rate*4/1000 < ctx.pos)
     {
@@ -376,13 +376,13 @@ public:
     return ctx.pos/(ctx.sample_rate*4)*1000;
   }
 
-  virtual bool ReadTag(const std::string& file, std::string& title,
-                       std::string& artist, int& length) override
+  bool ReadTag(const std::string& file, std::string& title,
+               std::string& artist, int& length) override
   {
     GSFContext gsf;
 
     if (psf_load(file.c_str(), &psf_file_system, 0x22, 0,
-                 0, psf_info_meta, &gsf, 0) <= 0)
+                 0, psf_info_meta, &gsf, 0, nullptr, nullptr) <= 0)
     {
       return false;
     }
@@ -402,15 +402,13 @@ private:
 class ATTRIBUTE_HIDDEN CMyAddon : public kodi::addon::CAddonBase
 {
 public:
-  CMyAddon() { }
-  virtual ADDON_STATUS CreateInstance(int instanceType, std::string instanceID, KODI_HANDLE instance, KODI_HANDLE& addonInstance) override
+  CMyAddon() = default;
+  ADDON_STATUS CreateInstance(int instanceType, std::string instanceID, KODI_HANDLE instance, KODI_HANDLE& addonInstance) override
   {
     addonInstance = new CGSFCodec(instance);
     return ADDON_STATUS_OK;
   }
-  virtual ~CMyAddon()
-  {
-  }
+  virtual ~CMyAddon() = default;
 };
 
 
