@@ -310,11 +310,11 @@ public:
     ctx.pos = 0;
 
     if (psf_load(filename.c_str(), &psf_file_system, 0x22, 0, 0,
-                 psf_info_meta, &ctx, 0) <= 0)
+                 psf_info_meta, &ctx, 0, nullptr, nullptr) <= 0)
       return false;
 
     if (psf_load(filename.c_str(), &psf_file_system, 0x22,
-        gsf_loader, &ctx.state, 0, 0, 0) < 0)
+        gsf_loader, &ctx.state, 0, 0, 0, nullptr, nullptr) < 0)
       return false;
 
     ctx.system.cpuIsMultiBoot = (ctx.state.entry >> 24 == 2);
@@ -382,7 +382,7 @@ public:
     GSFContext gsf;
 
     if (psf_load(file.c_str(), &psf_file_system, 0x22, 0,
-                 0, psf_info_meta, &gsf, 0) <= 0)
+                 0, psf_info_meta, &gsf, 0, nullptr, nullptr) <= 0)
     {
       return false;
     }
