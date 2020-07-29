@@ -293,8 +293,8 @@ public:
   bool Init(const std::string& filename, unsigned int filecache,
             int& channels, int& samplerate,
             int& bitspersample, int64_t& totaltime,
-            int& bitrate, AEDataFormat& format,
-            std::vector<AEChannel>& channellist) override
+            int& bitrate, AudioEngineDataFormat& format,
+            std::vector<AudioEngineChannel>& channellist) override
   {
     ctx.pos = 0;
 
@@ -313,8 +313,8 @@ public:
     CPUInit(&ctx.system);
     CPUReset(&ctx.system);
 
-    format = AE_FMT_S16NE;
-    channellist = { AE_CH_FL, AE_CH_FR };
+    format = AUDIOENGINE_FMT_S16NE;
+    channellist = { AUDIOENGINE_CH_FL, AUDIOENGINE_CH_FR };
     channels = 2;
     bitspersample = 16;
     bitrate = 0.0;
@@ -365,20 +365,19 @@ public:
     return ctx.pos/(ctx.sample_rate*4)*1000;
   }
 
-  bool ReadTag(const std::string& file, std::string& title,
-               std::string& artist, int& length) override
+  bool ReadTag(const std::string& filename, kodi::addon::AudioDecoderInfoTag& tag) override
   {
     GSFContext gsf;
 
-    if (psf_load(file.c_str(), &psf_file_system, 0x22, 0,
+    if (psf_load(filename.c_str(), &psf_file_system, 0x22, 0,
                  0, psf_info_meta, &gsf, 0, nullptr, nullptr) <= 0)
     {
       return false;
     }
 
-    title = gsf.title.c_str();
-    artist = gsf.artist.c_str();
-    length = gsf.len/1000;
+    tag.SetTitle(gsf.title);
+    tag.SetArtist(gsf.artist);
+    tag.SetDuration(gsf.len/1000);
 
     return true;
   }
