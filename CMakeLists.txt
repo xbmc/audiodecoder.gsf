@@ -16,6 +16,7 @@ add_subdirectory(lib/psflib)
 add_subdirectory(lib/viogsf)
 
 set(GSF_SOURCES src/GSFCodec.cpp)
+set(GSF_HEADERS src/GSFCodec.h)
 
 set(DEPLIBS viogsf psflib ${ZLIB_LIBRARIES})
 
