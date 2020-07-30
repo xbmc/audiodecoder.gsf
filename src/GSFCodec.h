@@ -51,6 +51,9 @@ struct GSFContext
   bool inited = false;
   std::string title;
   std::string artist;
+  std::string year;
+  std::string game;
+  std::string comment;
 };
 
 class ATTRIBUTE_HIDDEN CGSFCodec : public kodi::addon::CInstanceAudioDecoder
