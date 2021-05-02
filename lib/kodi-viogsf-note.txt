@@ -1,2 +1,9 @@
-viogsf from https://github.com/kode54/viogsf
-Sync to f171786
+viogsf from https://git.lopez-snowhill.net/chris/viogsf
+Sync to 6c43a992 (30 January 2018)
+
+Include 2 own fixes about OS builds:
+- https://github.com/xbmc/audiodecoder.gsf/commit/cb3df9820214093b3d21f8b200eefe5be75ae09e
+- https://github.com/xbmc/audiodecoder.gsf/commit/2ce3b8b5cc38d67a1ee0b8755d53d1904d2babe9
+
+Old source:
+- https://github.com/kode54/viogsf
