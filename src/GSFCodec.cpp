@@ -348,10 +348,10 @@ bool CGSFCodec::ReadTag(const std::string& filename, kodi::addon::AudioDecoderIn
     return false;
   }
 
-  if (!gsf.title.empty())
+  if (!gsf.artist.empty())
     tag.SetArtist(gsf.artist);
   else
-    tag.SetArtist(gsf.artist);
+    tag.SetArtist(gsf.game);
   tag.SetTitle(gsf.title);
   tag.SetAlbum(gsf.game);
   tag.SetReleaseDate(gsf.year);
