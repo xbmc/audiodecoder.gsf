@@ -102,34 +102,30 @@ extern "C"
 
   static void* psf_file_fopen(void* context, const char* uri)
   {
-    fprintf(stderr, "-aaa------------< 1\n");
     kodi::vfs::CFile* file = new kodi::vfs::CFile;
     if (!file->OpenFile(uri, 0))
     {
       delete file;
       return nullptr;
     }
-fprintf(stderr, "-aaa------------< 1aa\n");
+
     return file;
   }
 
   static size_t psf_file_fread(void* buffer, size_t size, size_t count, void* handle)
   {
-    fprintf(stderr, "-aaa------------< 2\n");
     kodi::vfs::CFile* file = static_cast<kodi::vfs::CFile*>(handle);
     return file->Read(buffer, size * count);
   }
 
   static int psf_file_fseek(void* handle, int64_t offset, int whence)
   {
-    fprintf(stderr, "-aaa------------< 3\n");
     kodi::vfs::CFile* file = static_cast<kodi::vfs::CFile*>(handle);
     return file->Seek(offset, whence) > -1 ? 0 : -1;
   }
 
   static int psf_file_fclose(void* handle)
   {
-    fprintf(stderr, "-aaa------------< 4\n");
     delete static_cast<kodi::vfs::CFile*>(handle);
 
     return 0;
@@ -346,13 +342,12 @@ int64_t CGSFCodec::Seek(int64_t time)
 bool CGSFCodec::ReadTag(const std::string& filename, kodi::addon::AudioDecoderInfoTag& tag)
 {
   GSFContext gsf;
-fprintf(stderr, "-------------< 1\n");
   if (psf_load(filename.c_str(), &psf_file_system, 0x22, 0, 0, psf_info_meta, &gsf, 0, nullptr,
                nullptr) <= 0)
   {
     return false;
   }
-fprintf(stderr, "-------------< 2\n");
+
   if (!gsf.title.empty())
     tag.SetArtist(gsf.artist);
   else
