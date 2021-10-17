@@ -299,10 +299,10 @@ bool CGSFCodec::Init(const std::string& filename,
   return true;
 }
 
-int CGSFCodec::ReadPCM(uint8_t* buffer, int size, int& actualsize)
+int CGSFCodec::ReadPCM(uint8_t* buffer, size_t size, size_t& actualsize)
 {
   if (ctx.pos >= ctx.len)
-    return 1;
+    return AUDIODECODER_READ_EOF;
 
   if (ctx.output.bytes_in_buffer == 0)
   {
@@ -310,13 +310,13 @@ int CGSFCodec::ReadPCM(uint8_t* buffer, int size, int& actualsize)
     CPULoop(&ctx.system, 250000);
   }
 
-  int tocopy = std::min(size, (int)ctx.output.bytes_in_buffer);
+  size_t tocopy = std::min(size, ctx.output.bytes_in_buffer);
   memcpy(buffer, &ctx.output.sample_buffer[ctx.output.head], tocopy);
   ctx.pos += tocopy;
   ctx.output.bytes_in_buffer -= tocopy;
   ctx.output.head += tocopy;
   actualsize = tocopy;
-  return 0;
+  return AUDIODECODER_READ_SUCCESS;
 }
 
 int64_t CGSFCodec::Seek(int64_t time)
@@ -365,7 +365,7 @@ bool CGSFCodec::ReadTag(const std::string& filename, kodi::addon::AudioDecoderIn
 
 //------------------------------------------------------------------------------
 
-class ATTRIBUTE_HIDDEN CMyAddon : public kodi::addon::CAddonBase
+class ATTR_DLL_LOCAL CMyAddon : public kodi::addon::CAddonBase
 {
 public:
   CMyAddon() = default;
