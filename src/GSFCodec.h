@@ -59,7 +59,7 @@ struct GSFContext
 class ATTR_DLL_LOCAL CGSFCodec : public kodi::addon::CInstanceAudioDecoder
 {
 public:
-  CGSFCodec(KODI_HANDLE instance, const std::string& version);
+  CGSFCodec(const kodi::addon::IInstanceInfo& instance);
   virtual ~CGSFCodec();
 
   bool Init(const std::string& filename,
