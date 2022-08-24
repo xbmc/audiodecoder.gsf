@@ -18,6 +18,7 @@
     <assets>
       <icon>icon.png</icon>
     </assets>
+    <summary lang="ca_ES">Descodificador d&apos;àudio VIOGSF</summary>
     <summary lang="da_DK">VIOGSF lydafkoder</summary>
     <summary lang="de_DE">VIOGSF Audio Decoder</summary>
     <summary lang="en_GB">VIOGSF Audio Decoder</summary>
