@@ -24,6 +24,7 @@
       <icon>icon.png</icon>
     </assets>
     <summary lang="af_ZA">VIOGSF Oudio Dekodeerder</summary>
+    <summary lang="bs_BA">VIOGSF audio dekoder</summary>
     <summary lang="ca_ES">Descodificador d&apos;àudio VIOGSF</summary>
     <summary lang="da_DK">VIOGSF lydafkoder</summary>
     <summary lang="de_DE">VIOGSF Audio Decoder</summary>
@@ -39,6 +40,7 @@
     <summary lang="ru_RU">Аудиодекодер VIOGSF</summary>
     <summary lang="sv_SE">VIOGSF-ljudavkodare</summary>
     <summary lang="zh_CN">VIOGSF 音频解码器</summary>
+    <description lang="bs_BA">GSF je dodatak za Kodi koji dodaje mogućnost reprodukcije muzičkih datoteka za Game Boy Advance, u GSF formatu (datoteke MINIGSF i GSFLIB). Ovaj plejer je baziran na emulatoru Visual Boy Advanced, iako je kvalitet zvuka identičan onome u Highly Advanced formatu.</description>
     <description lang="da_DK">GSF er en addon til Kodi, der tilføjer muligheden for at afspille Game Boy Advance-musikfiler, GSF-formatet (MINIGSF- og GSFLIB-filer). Denne afspiller er baseret på Visual Boy Advanced-emulatoren, selvom lydkvaliteten ser ud til at være identisk med Highly Advanced.</description>
     <description lang="de_DE">GSF ist ein Addon für Kodi, mit dem Game Boy Advance-Musikdateien im GSF-Format (MINIGSF- und GSFLIB-Dateien) abgespielt werden können. Dieser Player basiert auf dem Visual Boy Advanced-Emulator, obwohl die Klangqualität mit Highly Advanced identisch zu sein scheint.</description>
     <description lang="en_GB">GSF is a addon for Kodi which adds the ability to play Game Boy Advance music files, the GSF format (MINIGSF and GSFLIB files). This player is based on the Visual Boy Advanced emulator, although the sound quality appears to be identical to Highly Advanced.</description>
